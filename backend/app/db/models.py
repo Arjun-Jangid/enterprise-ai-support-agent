@@ -1,5 +1,6 @@
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+
 from backend.app.db.connection import Base
 
 
@@ -11,8 +12,9 @@ class User(Base):
 
     chats = relationship("Chat", back_populates="user")
 
+
 class Chat(Base):
-    __tablename__  = "chats"
+    __tablename__ = "chats"
     chat_id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
     message = Column(String, nullable=False)
