@@ -1,4 +1,5 @@
 import sys
+import time
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -11,6 +12,13 @@ from backend.app.rag.pipeline import ask_question, ingest_document
 from config import UPLOAD_DIR
 from frontend.utils.file_writer import save_text_file
 from frontend.utils.text_extractor import extract_docx_text, extract_pdf_text, extract_txt_text
+from frontend.utils.session import (
+    init_chat_session,
+    get_messages,
+    add_user_message,
+    add_assistant_message,
+)
+from frontend.utils.chat_mapper import build_langchain_history
 
 # Streamlit Page UI configuration
 st.set_page_config(
@@ -19,50 +27,100 @@ st.set_page_config(
     layout="centered",
 )
 
+init_chat_session()
+
+if "doc_processed" not in st.session_state:
+    st.session_state.doc_processed = False
+
+if "current_file_id" not in st.session_state:
+    st.session_state.current_file_id = None
+
+
 st.title("AI Enterprise Tool")
 st.markdown("Please upload your corporate document below.")
 
-uploaded_file = st.file_uploader("Choose a file", type=["pdf", "txt", "docx"])
+def reset_for_new_file():
+    st.session_state.doc_processed = False
+    st.session_state.current_file_id = None
+    st.session_state.messages = []
+
+uploaded_file = st.file_uploader("Choose a file", type=["pdf", "txt", "docx"], key="uploader")
 
 if uploaded_file is not None:
-    # Safely generate a standardized target file name using pathlib
-    base_name = Path(uploaded_file.name).stem
-    file_type = Path(uploaded_file.name).suffix.lower()
-    target_file_path = UPLOAD_DIR / f"{base_name}.txt"
+    file_id = f"{uploaded_file.name}_{uploaded_file.size}"
 
-    text: str | None = None
+    if st.session_state.get("current_file_id") != file_id:
+        reset_for_new_file()
+        st.session_state.current_file_id = file_id
+        try:
+            text: str | None = None
+            file_type = Path(uploaded_file.name).suffix.lower()
 
-    # Process files based on suffix evaluations
-    if file_type == ".pdf":
-        with st.spinner("Processing PDF document..."):
-            text = extract_pdf_text(uploaded_file)
+            # Process files based on suffix
+            if file_type == ".pdf":
+                with st.spinner("Processing PDF document..."):
+                    text = extract_pdf_text(uploaded_file)
+            elif file_type == ".txt":
+                with st.spinner("Processing text document..."):
+                    text = extract_txt_text(uploaded_file)
+            elif file_type == ".docx":
+                with st.spinner("Processing docx document..."):
+                    text = extract_docx_text(uploaded_file)
 
-    elif file_type == ".txt":
-        with st.spinner("Processing text document..."):
-            text = extract_txt_text(uploaded_file)
+            if not text or not text.strip():
+                st.error("Could not extract any text from the file.")
+                st.stop()
 
-    elif file_type == ".docx":
-        with st.spinner("Processing docx document..."):
-            text = extract_docx_text(uploaded_file)
+            base_name = f"{Path(uploaded_file.name).stem}_{int(time.time())}.txt"
+            target_file_path = UPLOAD_DIR / base_name
+
+            status = st.empty()
+
+            if not save_text_file(text, target_file_path):
+                st.error("Failed to save document.")
+                st.stop()
+
+            ingest_document(text)
+            st.session_state.doc_processed = True
+            status.success("Document ready.")
+            status.empty()
+        
+        except Exception as e:
+            st.error(f"Document processing failed: {e}")
+            st.stop()
 
 
-    if text is not None:
-        if save_text_file(text, target_file_path):
-            st.success("Document processed successfully.")
+if st.session_state.doc_processed:
+    user_query = st.chat_input("Please ask your questions...")
+    if user_query:
+        messages = get_messages()
+        chat_history = build_langchain_history(messages)
 
-        ingest_document(text)
+        with st.chat_message("user"):
+            st.write(user_query)
 
-    user_query = st.text_input(label="Ask your question...")
-
-    if st.button(label="Submit"):
-        if user_query:
+        with st.chat_message("assistant"):
             with st.spinner("Answering..."):
-                answer = ask_question(user_query)
-
-                if answer:
+                try:
+                    answer = ask_question(user_query, chat_history)
                     st.write(answer)
-                else:
+                    add_user_message(user_query)
+                    add_assistant_message(answer)
+                except Exception as e:
                     st.warning("No answer found.")
+                    st.stop()
 
-        else:
-            st.warning("Please ask a query.")
+
+    with st.sidebar:
+        st.subheader("Chat History")
+        for msg in get_messages():
+            role = "You" if msg["role"] == "user" else "Assistant"
+            st.markdown(f"""
+                        <p style="font-size: 14px;
+                        padding: 8px 12px;
+                        margin:4px 0;
+                        line-height: 1.5;
+                        background-color: #0e1117;
+                        border-radius: 8px;
+                        "><strong>{role}:</strong> {msg["content"]}</p>
+                        """, unsafe_allow_html=True)

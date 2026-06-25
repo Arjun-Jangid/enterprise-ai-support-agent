@@ -8,7 +8,7 @@ def ingest_document(text: str):
     store_chunks(chunks)
 
 
-def ask_question(question: str):
+def ask_question(question: str, chat_history):
     result = retrieve_documents(question)
     context = "\n\n".join(
         result["documents"][0],
@@ -17,6 +17,7 @@ def ask_question(question: str):
     answer = generate_answer(
         context=context,
         question=question,
+        chat_history=chat_history,
     )
 
     return answer

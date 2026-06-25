@@ -1,40 +1,34 @@
-from langchain_core.prompts import PromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama import ChatOllama
 
 from config import LLM_MODEL
 
 llm = ChatOllama(model=LLM_MODEL)
 
-PROMPT = """
-You are a document QA assistant.
 
-Context:
+def generate_answer(context, question, chat_history):
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", """You are a helpful document Q&A assistant.
+Answer only from the provided context and chat history.
+If the answer is not in the uploaded documents, say:
+"I could not find this information in the uploaded documents."
+Keep answers short."""),
+("placeholder", "{chat_history}"),
+("human", """Context:
 
 {context}
+
 Question:
 
-{question}
-Instructions:
-
-- Answer only from the context.
-- Combine information from multiple sections if needed.
-- Do not use outside knowledge.
-- If the answer is not available, reply:
-"I could not find this information in the uploaded documents."
-"""
-
-
-def generate_answer(context, question):
-    prompt = PromptTemplate(
-        template=PROMPT,
-        input_variables=["context", "question"],
-    )
+{question}""")
+    ])
 
     chain = prompt | llm
 
     result = chain.invoke({
         "context": context,
         "question": question,
+        "chat_history": chat_history,
     })
 
     return result.content
