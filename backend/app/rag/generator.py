@@ -14,13 +14,13 @@ If the answer is not in the uploaded documents, say:
 "I could not find this information in the uploaded documents."
 Keep answers short."""),
 ("placeholder", "{chat_history}"),
-("human", """Context:
-
+("human", """
+Context:
 {context}
 
 Question:
-
-{question}""")
+{question}
+ """)
     ])
 
     chain = prompt | llm

@@ -19,6 +19,7 @@ from frontend.utils.session import (
     add_assistant_message,
 )
 from frontend.utils.chat_mapper import build_langchain_history
+from frontend.component.chat_history import render_chat_history
 
 # Streamlit Page UI configuration
 st.set_page_config(
@@ -47,14 +48,16 @@ def reset_for_new_file():
 uploaded_file = st.file_uploader("Choose a file", type=["pdf", "txt", "docx"], key="uploader")
 
 if uploaded_file is not None:
-    file_id = f"{uploaded_file.name}_{uploaded_file.size}"
+    file_name = uploaded_file.name
+    file_size = uploaded_file.size
+    file_id = f"{file_name}_{file_size}"
 
     if st.session_state.get("current_file_id") != file_id:
         reset_for_new_file()
         st.session_state.current_file_id = file_id
         try:
             text: str | None = None
-            file_type = Path(uploaded_file.name).suffix.lower()
+            file_type = Path(file_name).suffix.lower()
 
             # Process files based on suffix
             if file_type == ".pdf":
@@ -71,7 +74,7 @@ if uploaded_file is not None:
                 st.error("Could not extract any text from the file.")
                 st.stop()
 
-            base_name = f"{Path(uploaded_file.name).stem}_{int(time.time())}.txt"
+            base_name = f"{Path(file_name).stem}_{int(time.time())}.txt"
             target_file_path = UPLOAD_DIR / base_name
 
             status = st.empty()
@@ -80,7 +83,7 @@ if uploaded_file is not None:
                 st.error("Failed to save document.")
                 st.stop()
 
-            ingest_document(text)
+            ingest_document(text, file_name)
             st.session_state.doc_processed = True
             status.success("Document ready.")
             status.empty()
@@ -103,7 +106,8 @@ if st.session_state.doc_processed:
             with st.spinner("Answering..."):
                 try:
                     answer = ask_question(user_query, chat_history)
-                    st.write(answer)
+                    st.write(answer["answer"])
+
                     add_user_message(user_query)
                     add_assistant_message(answer)
                 except Exception as e:
@@ -112,15 +116,4 @@ if st.session_state.doc_processed:
 
 
     with st.sidebar:
-        st.subheader("Chat History")
-        for msg in get_messages():
-            role = "You" if msg["role"] == "user" else "Assistant"
-            st.markdown(f"""
-                        <p style="font-size: 14px;
-                        padding: 8px 12px;
-                        margin:4px 0;
-                        line-height: 1.5;
-                        background-color: #0e1117;
-                        border-radius: 8px;
-                        "><strong>{role}:</strong> {msg["content"]}</p>
-                        """, unsafe_allow_html=True)
+        render_chat_history(messages=get_messages())

@@ -13,8 +13,9 @@ def add_user_message(question: str):
         "content": question,
     })
 
-def add_assistant_message(answer: str):
+def add_assistant_message(answer: dict):
     st.session_state.messages.append({
         "role": "assistant",
-        "content": answer
+        "content": answer["answer"],
+        "sources": answer["sources"],
     })
