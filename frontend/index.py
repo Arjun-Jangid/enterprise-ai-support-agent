@@ -2,6 +2,11 @@ import sys
 import time
 from pathlib import Path
 
+import streamlit as st
+
+if not st.session_state.get("logged_in", False):
+    st.switch_page("pages/signup.py")
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -52,6 +57,11 @@ if uploaded_file is not None:
     file_size = uploaded_file.size
     file_id = f"{file_name}_{file_size}"
 
+    st.write(f"Current file - {uploaded_file.name}_{uploaded_file.size}")
+    print()
+    print(st.session_state.get("current_file_id"), "and", file_id)
+    print()
+
     if st.session_state.get("current_file_id") != file_id:
         reset_for_new_file()
         st.session_state.current_file_id = file_id
@@ -91,7 +101,10 @@ if uploaded_file is not None:
         except Exception as e:
             st.error(f"Document processing failed: {e}")
             st.stop()
-
+    
+    else:
+        st.write(f"This document {uploaded_file.name}_{uploaded_file.size} has already uploaded!")
+        print(f"This document {uploaded_file.name}_{uploaded_file.size} has already uploaded!")
 
 if st.session_state.doc_processed:
     user_query = st.chat_input("Please ask your questions...")
@@ -114,6 +127,10 @@ if st.session_state.doc_processed:
                     st.warning("No answer found.")
                     st.stop()
 
-
+if st.session_state.get("logged_in", True):
     with st.sidebar:
+        if st.button(label="Logout"):
+            st.session_state.clear()
+            st.switch_page("pages/login.py")
+            
         render_chat_history(messages=get_messages())

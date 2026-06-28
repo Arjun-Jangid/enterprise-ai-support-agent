@@ -15,3 +15,5 @@ EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 LLM_MODEL = "qwen2.5:3b"
 
 DATABASE_URL = f"sqlite:///{DATA_DIR / 'enterprise.db'}"
+
+BACKEND_URL = "http://127.0.0.1:8000"
