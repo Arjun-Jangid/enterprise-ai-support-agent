@@ -4,3 +4,10 @@ __pycache__/
 .mypy_cache/
 .env
 temp.txt
+uploads/*
+!uploads/.gitkeep
+# Runtime databases
+data/chroma_db/*
+!data/chroma_db/.gitkeep
+
+data/enterprise.db

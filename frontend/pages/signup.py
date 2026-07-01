@@ -35,8 +35,8 @@ def signup_handler(name, email, password):
             st.error(data["detail"])
 
     except Exception as e:
-        st.error(f"Error - {e}")
         print(e)
+        st.error(str(e))
         
 
 with st.form("SignUp"):
@@ -52,7 +52,9 @@ st.page_link(
     label="Already have an account? Login"
 )
 
+
 if submit and name and email and password:
-    signup_handler(name, email, password)
+    with st.spinner("Creating your account..."):
+        signup_handler(name, email, password)
 elif submit:
     st.warning("Please fill all the fields.")

@@ -12,3 +12,9 @@ class SignUpSchema(BaseModel):
 class LoginSchema(BaseModel):
     email: EmailStr = Field(..., description="Email of the user")
     password: str = Field(..., description="Password of the email")
+
+class ChatHistoryRequest(BaseModel):
+    document_id: int = Field(..., description="Id of document")
+    user_message: str =  Field(..., description="message of user")
+    assistant_message: str =  Field(..., description="message of assistant")
+    sources: list | None = None

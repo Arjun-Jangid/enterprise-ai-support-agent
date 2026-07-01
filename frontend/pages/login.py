@@ -26,8 +26,8 @@ def login_handler(email, password):
             st.error(data["detail"])
 
     except Exception as e:
-        st.error(f"Error - {e}")
         print(e)
+        st.error(str(e))
 
         
 
@@ -44,7 +44,7 @@ st.page_link(
 )
 
 if submit and email and password:
-    login_handler(email, password)
-
+    with st.spinner("Logging in..."):
+        login_handler(email, password)
 elif submit:
     st.warning("Please fill both the fields.")

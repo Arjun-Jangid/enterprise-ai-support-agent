@@ -11,8 +11,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-import streamlit as st
-
 from backend.app.rag.pipeline import ask_question
 from config import BACKEND_URL
 from frontend.utils.session import (
@@ -34,19 +32,17 @@ st.set_page_config(
 init_chat_session()
 
 st.title("AI Enterprise Tool")
-st.markdown("Please upload your document below.")
-
-# st.session_state.messages = []
+st.markdown("Please upload your document below.")   
 
 uploaded_file = st.file_uploader("Choose a file", type=["pdf", "txt", "docx"], key="uploader")
 
 if uploaded_file is not None:
     try:
         token = st.session_state.get("token")
-
         headers = {
             "Authorization": f"Bearer {token}"
         }
+
         files = {
             "file": (
                 uploaded_file.name,
@@ -55,11 +51,13 @@ if uploaded_file is not None:
             )
         }
          
-        response = requests.post(url=f"{BACKEND_URL}/upload", files=files, headers=headers)
+        response = requests.post(f"{BACKEND_URL}/upload", files=files, headers=headers)
         data = response.json()
 
         if response.status_code == 200:
             st.success(data["message"])
+            document_id = data.get("document_id")
+            st.session_state.document_id = data["document_id"]
         elif response.status_code == 400:
             st.error(data["detail"])
         else:
@@ -67,6 +65,7 @@ if uploaded_file is not None:
     
     except Exception as e:
         print(f"Error - {e}")
+        st.error(str(e))
 
         # reset_for_new_file()
 
@@ -84,6 +83,32 @@ if uploaded_file is not None:
                 try:
                     answer = ask_question(user_query, chat_history)
                     st.write(answer["answer"])
+                    
+
+                    token = st.session_state.get("token")
+                    headers = {
+                        "Authorization": f"Bearer {token}"
+                    }
+                    document_id = st.session_state.get("document_id")
+
+                    data = {
+                        "document_id": st.session_state.document_id,
+                        "user_message": user_query,
+                        "assistant_message": answer["answer"],
+                        "sources": answer["sources"],
+                    }
+
+                    response = requests.post(f"{BACKEND_URL}/chat-history", json=data, headers=headers)
+
+                    data = response.json()
+
+                    if response.status_code == 200:
+                        st.success(data["message"])
+                    elif response.status_code == 400:
+                        st.error(data["detail"])
+                    else:
+                        st.error(data["detail"])
+                    
 
                     add_user_message(user_query)
                     add_assistant_message(answer)
@@ -91,10 +116,31 @@ if uploaded_file is not None:
                     st.warning("No answer found.")
                     st.stop()
 
+
 if st.session_state.get("logged_in", True):
     with st.sidebar:
         if st.button(label="Logout"):
             st.session_state.clear()
             st.switch_page("pages/login.py")
-            
-        render_chat_history(messages=get_messages())
+        st.subheader("Chat History")
+
+        try:
+            document_id = st.session_state.get("document_id")
+            if document_id is not None:
+                response = requests.get(f"{BACKEND_URL}/chat-history/{document_id}")
+                data = response.json()
+
+                if response.status_code == 200:
+                    result = data["data"]
+                    with st.spinner("History loading..."):
+                        if result:
+                            render_chat_history(messages=result)
+                        else:
+                            st.info("No history found.")
+                elif response.status_code == 400:
+                    st.error(data["message"])
+                else:
+                    print("Error")
+
+        except Exception as e:
+            print(e)
