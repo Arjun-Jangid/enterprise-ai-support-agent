@@ -1,14 +1,12 @@
-from email.policy import HTTP
-
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from backend.app.db.connection import get_db
-from backend.app.db.models import User
+from backend.app.models.models import User
 from sqlalchemy.orm import Session
 
-SECRET_KEY = "your-secret-key"
+SECRET_KEY = "my_secret_key"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 

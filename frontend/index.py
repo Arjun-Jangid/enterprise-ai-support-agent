@@ -34,6 +34,8 @@ init_chat_session()
 st.title("AI Enterprise Tool")
 st.markdown("Please upload your document below.")   
 
+
+# File upload
 uploaded_file = st.file_uploader("Choose a file", type=["pdf", "txt", "docx"], key="uploader")
 
 if uploaded_file is not None:
@@ -67,9 +69,7 @@ if uploaded_file is not None:
         print(f"Error - {e}")
         st.error(str(e))
 
-        # reset_for_new_file()
-
-# if st.session_state.doc_processed:
+    # User ask query
     user_query = st.chat_input("Please ask your questions...")
     if user_query:
         messages = get_messages()
