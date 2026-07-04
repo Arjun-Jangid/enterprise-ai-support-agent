@@ -2,7 +2,6 @@ import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from sqlalchemy.orm import Session
 from config import UPLOAD_DIR
 from backend.app.db.connection import get_db
