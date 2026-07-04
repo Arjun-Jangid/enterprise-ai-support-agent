@@ -3,20 +3,29 @@ from backend.app.rag.generator import generate_answer
 from backend.app.rag.retriever import retrieve_documents, store_chunks
 
 
-def ingest_document(text: str, file_name: str):
+def ingest_document(text: str, file_name: str, user_id: int, document_id: int):
     chunks = split_document(text)
-    store_chunks(chunks, file_name)
+    store_chunks(chunks, file_name, user_id, document_id)
 
 
-def ask_question(question: str, chat_history):
-    result = retrieve_documents(question)
+def ask_question(user_id: int, document_id: int, query: str, chat_history):
+
+    result = retrieve_documents(
+        query=query,
+        user_id=user_id,
+        document_id=document_id
+        )
+    
+    if result is None:
+        return None
+    
     context = "\n\n".join(
         result["documents"][0],
     )
 
     answer = generate_answer(
         context=context,
-        question=question,
+        query=query,
         chat_history=chat_history,
     )
 

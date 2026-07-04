@@ -1,9 +1,10 @@
 import re
 import pypdf
 import docx2txt
-import streamlit as st
 from io import BytesIO
+
 from tempfile import NamedTemporaryFile
+from fastapi import HTTPException
 
 
 def condense_whitespace(raw_text: str) -> str:
@@ -20,48 +21,71 @@ def condense_whitespace(raw_text: str) -> str:
 
 
 
-def extract_pdf_text(file_bytes: bytes) -> str | None:
+def extract_pdf_text(file_bytes: bytes) -> str:
     """Extracts text from PDF and writes it to a file safely."""
     try:
         pdf_reader = pypdf.PdfReader(BytesIO(file_bytes))
         raw_text = "".join([page.extract_text() or "" for page in pdf_reader.pages])
         
         if not raw_text.strip():
-            st.warning("No extractable text was found in the PDF. The document may be scanned or image-based.")
-            return None
-        
+            raise HTTPException(
+                    status_code=400,
+                    detail="No extractable text was found in the PDF. The document may be scanned or image-based."
+                )
+    
         return condense_whitespace(raw_text)
     
-    except Exception as e:
-        st.error("Unable to process the PDF document. Please upload a valid PDF file.")
-        return None
+    except HTTPException:
+        raise
+
+    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail="Unable to process the PDF document. Please upload a valid PDF file."
+        )
     
 
-def extract_txt_text(file_bytes: bytes) -> str | None:
-    """Decodes and writes raw text file safely."""
+def extract_txt_text(file_bytes: bytes) -> str:
     try:
         raw_text = file_bytes.decode("utf-8")
         return condense_whitespace(raw_text)
-    
+
     except UnicodeDecodeError:
-        st.error("Unable to read the text file. Please save the file using UTF-8 encoding and try again.")
-        return None
+        raise HTTPException(
+            status_code=400,
+            detail="Unable to read the text file. Please save the file using UTF-8 encoding and try again."
+        )
     
-    except Exception as e:
-        st.error("Unable to process the text document. Please try again.")
-        return None
+    except HTTPException:
+        raise
+
+    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail="Unable to process the text document. Please try again."
+        )
     
-
-def extract_docx_text(file_bytes: bytes) -> str | None:
-
+    
+def extract_docx_text(file_bytes: bytes) -> str:
     try:
         with NamedTemporaryFile(suffix=".docx") as temp_file:
             temp_file.write(file_bytes)
             temp_file.flush()
 
             raw_text = docx2txt.process(temp_file.name)
-        return condense_whitespace(raw_text)
 
-    except Exception as e:
-        st.error("Unable to process the docx document. Please try again.")
-        return None
+        if not raw_text.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="No extractable text was found in the DOCX document."
+            )
+        return condense_whitespace(raw_text)
+    
+    except HTTPException:
+        raise
+
+    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail="Unable to process the DOCX document. Please upload a valid DOCX file."
+        )

@@ -22,8 +22,8 @@ def signup_handler(name, email, password):
         data = response.json()
 
         if response.status_code == 200:
-            st.session_state["token"] = data["access_token"]
-            st.session_state["logged_in"] = True
+            st.session_state.token = data["access_token"]
+            st.session_state.logged_in = True
 
             st.success(data["message"])
             st.switch_page("index.py")
@@ -32,14 +32,14 @@ def signup_handler(name, email, password):
             for err in data["detail"]:
                 st.error(err["msg"])
         else:
-            st.error(data["detail"])
+            st.error(data.get("detail", "Login failed."))
 
     except Exception as e:
         print(e)
-        st.error(str(e))
+        st.error("Unable to connect to the server.")
         
 
-with st.form("SignUp"):
+with st.form("signup"):
     st.markdown("### Create your account")
     st.markdown("Sign up to access your AI Enterprise Assistant.")
     name = st.text_input("Name")
@@ -53,8 +53,9 @@ st.page_link(
 )
 
 
-if submit and name and email and password:
-    with st.spinner("Creating your account..."):
-        signup_handler(name, email, password)
-elif submit:
-    st.warning("Please fill all the fields.")
+if submit:
+    if not name or not email or not password:
+        st.warning("Please fill all fields.")
+    else:
+        with st.spinner("Creating your account..."):
+            signup_handler(name, email, password)

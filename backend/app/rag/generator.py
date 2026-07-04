@@ -1,34 +1,26 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama import ChatOllama
 
+from backend.app.rag.prompts import QA_PROMPT
+
 from config import LLM_MODEL
+from fastapi import HTTPException
 
 llm = ChatOllama(model=LLM_MODEL)
+chain = QA_PROMPT | llm
 
 
-def generate_answer(context, question, chat_history):
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are a helpful document Q&A assistant.
-Answer only from the provided context and chat history.
-If the answer is not in the uploaded documents, say:
-"I could not find this information in the uploaded documents."
-Keep answers short."""),
-("placeholder", "{chat_history}"),
-("human", """
-Context:
-{context}
-
-Question:
-{question}
- """)
-    ])
-
-    chain = prompt | llm
-
-    result = chain.invoke({
-        "context": context,
-        "question": question,
-        "chat_history": chat_history,
-    })
+def generate_answer(context, query, chat_history):
+    try:
+        result = chain.invoke({
+            "context": context,
+            "query": query,
+            "chat_history": chat_history,
+        })
+    except Exception:
+        raise HTTPException(
+            status_code=503,
+            detail="LLM service unavailable."
+        )
 
     return result.content

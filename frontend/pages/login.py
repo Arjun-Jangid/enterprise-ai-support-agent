@@ -13,8 +13,9 @@ def login_handler(email, password):
         data = response.json()
 
         if response.status_code == 200:
-            st.session_state["token"] = data["access_token"]
-            st.session_state["logged_in"] = True
+            st.session_state.token = data["access_token"]
+            st.session_state.logged_in = True
+            st.session_state.user_id = data["user_id"]
 
             st.success(data["message"])
             st.switch_page("index.py")
@@ -23,15 +24,15 @@ def login_handler(email, password):
             for err in data["detail"]:
                 st.error(err["msg"])
         else:
-            st.error(data["detail"])
+            st.error(data.get("detail", "Login failed."))
 
     except Exception as e:
         print(e)
-        st.error(str(e))
+        st.error("Unable to connect to the server.")
 
         
 
-with st.form("SignUp"):
+with st.form("login"):
     st.markdown("### Welcome back")
     st.markdown("Login to continue to your AI Enterprise Assistant.")
     email = st.text_input("Email")
@@ -43,8 +44,10 @@ st.page_link(
     label="Don't have an account? Sign up"
 )
 
-if submit and email and password:
-    with st.spinner("Logging in..."):
-        login_handler(email, password)
-elif submit:
-    st.warning("Please fill both the fields.")
+
+if submit:
+    if not email or not password:
+        st.warning("Please fill both fields.")
+    else:
+        with st.spinner("Logging in..."):
+            login_handler(email, password)

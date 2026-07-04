@@ -8,7 +8,7 @@ CHROMA_DB_PATH = DATA_DIR / "chroma_db"
 CHUNK_SIZE = 400
 CHUNK_OVERLAP = 80
 
-COLLECTION_NAME = "my_docs"
+COLLECTION_NAME = "enterprise_documents"
 
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
