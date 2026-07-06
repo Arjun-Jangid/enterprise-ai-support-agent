@@ -1,9 +1,8 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from backend.app.schemas.schemas import ChatHistoryListResponse
-from backend.app.models.models import ChatHistory, Document
+from backend.app.models.models import ChatHistory
 from backend.app.db.connection import get_db
-from backend.app.models.models import User
 from backend.app.utils.auth import get_current_user
 from sqlalchemy.orm import Session
 
