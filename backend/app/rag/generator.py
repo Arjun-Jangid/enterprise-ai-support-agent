@@ -1,4 +1,3 @@
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama import ChatOllama
 
 from backend.app.rag.prompts import QA_PROMPT

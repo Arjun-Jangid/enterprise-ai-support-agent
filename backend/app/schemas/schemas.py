@@ -1,5 +1,7 @@
+from langchain_core import chat_history
 from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime
+from typing import TypedDict
 
 class SignUpSchema(BaseModel):
     name: str = Field(..., description="Name of the user")
@@ -29,3 +31,13 @@ class ChatHistoryResponse(BaseModel):
 class ChatHistoryListResponse(BaseModel):
     message: str
     data: list[ChatHistoryResponse]
+
+
+# LangGraph Schemas
+class State(TypedDict):
+    question: str
+    route: str
+    retrived_docs: list
+    tool_result: str
+    answer: str
+    chat_history: list

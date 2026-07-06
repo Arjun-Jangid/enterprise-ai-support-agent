@@ -111,8 +111,6 @@ if st.session_state.get("logged_in", False):
                 response = requests.get(f"{BACKEND_URL}/chat-history/{document_id}")
                 data = response.json()
 
-                print("Data in history -- ", data)
-
                 if response.status_code == 200:
                     result = data["data"]
                     with st.spinner("History loading..."):

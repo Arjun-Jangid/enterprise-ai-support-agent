@@ -1,5 +1,4 @@
 from sklearn.metrics.pairwise import cosine_similarity
-from fastapi import HTTPException
 
 from backend.app.rag.embedding import create_embeddings
 from backend.app.rag.vectorstore import collection

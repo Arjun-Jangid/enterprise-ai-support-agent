@@ -10,8 +10,9 @@ from backend.app.schemas.schemas import SignUpSchema, LoginSchema, AskQuerySchem
 from backend.app.utils.auth import create_access_token, get_current_user
 from backend.app.document.text_extractor import extract_docx_text, extract_pdf_text, extract_txt_text
 from backend.app.document.file_writer import save_text_file
-from backend.app.rag.pipeline import ingest_document, ask_question
+from backend.app.rag.ingestion import ingest_document
 from backend.app.rag.history import build_langchain_history
+from backend.app.graph.graph import graph
 
 
 router = APIRouter()
@@ -216,52 +217,25 @@ def ask_query(
                 .all()
                 )
         
+
         # Convert chat history to LangChain messages
         messages = build_langchain_history(chat_history)
 
+        initial_state = {
+            "question": request.query,
+            "user_id": current_user.id,
+            "document_id": request.document_id,
+            "chat_history": messages,
+            "db": db,
+        }
 
-        # Generate answer using RAG pipeline
-        answer = ask_question(
-            user_id= current_user.id,
-            document_id= request.document_id,
-            query=request.query,
-            chat_history=messages
-        )
+        # Generate answer using LangGraph Workflow
+        result = graph.invoke(initial_state)
 
-        if answer is None:
-            raise HTTPException(
-                status_code=404,
-                detail="No relevant information found.",
-            )
-
-        # User row
-        db_user_message = ChatHistory(
-            user_id=current_user.id,
-            document_id=request.document_id,
-            role="user",
-            message=request.query,
-            sources=None,
-            created_at=datetime.now(timezone.utc),
-        )
-
-        # Assistant row
-        db_assistant_message = ChatHistory(
-            user_id=current_user.id,
-            document_id=request.document_id,
-            role="assistant",
-            message=answer["answer"],
-            sources=answer["sources"],
-            created_at=datetime.now(timezone.utc),
-        )
-        
-        try:
-            db.add_all([db_user_message, db_assistant_message])
-            db.commit()
-        except Exception:
-            db.rollback()
-            raise
-        
-        return answer
+        return {
+            "answer": result["answer"],
+            "sources": result["sources"],
+        }
     
     except HTTPException:
         raise
