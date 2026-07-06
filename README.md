@@ -145,12 +145,12 @@ config.py
 
 ## Users
 
-| Column   | Description     |
-| -------- | --------------- |
-| id       | Primary Key     |
-| name     | User name       |
-| email    | Unique email    |
-| password | Hashed password |
+| Column   | Description  |
+| -------- | ------------ |
+| id       | Primary Key  |
+| name     | User name    |
+| email    | Unique email |
+| password | Password     |
 
 ---
 
@@ -274,31 +274,31 @@ streamlit run frontend/index.py
 
 ## Login
 
-Signup Screenshot -> (images/login.png)
+![Login](images/login.png)
 
 ---
 
 ## Signup
 
-Signup Screenshot -> (images/signup.png)
+![Signup](images/signup.png)
 
 ---
 
 ## Document Upload
 
-Document Upload Screenshot -> (images/upload.png)
+![Document Upload](images/upload.png)
 
 ---
 
 ## Chat Interface
 
-Chat Interface Screenshot -> (images/chat_interface.png)
+![Chat Interface](images/chat_interface.png)
 
 ---
 
 ## Source Citations
 
-Source Citations Screenshot -> (images/source_citations.png)
+![Source Citations](images/source_citations.png)
 
 ---
 
