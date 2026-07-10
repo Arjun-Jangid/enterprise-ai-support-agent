@@ -10,7 +10,7 @@ CHUNK_OVERLAP = 80
 
 COLLECTION_NAME = "enterprise_documents"
 
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+EMBEDDING_MODEL = "BAAI/bge-m3"
 
 LLM_MODEL = "qwen2.5:3b"
 

@@ -13,10 +13,10 @@ def render_chat_history(messages):
             """,
             unsafe_allow_html=True,
         )
-
+    
         if msg["role"] == "assistant":
             with st.expander("Retrieved Chunks"):
-                for source in msg.get("sources") or []:
+                for source in msg.get("sources"):
                     st.markdown(
                         f"""
                             <div style='font-size:14px;line-height: 1.5;padding-bottom: 10px;'>

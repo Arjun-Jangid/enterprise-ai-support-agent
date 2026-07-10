@@ -12,6 +12,8 @@ class State(TypedDict):
     context: str
     sources: list
 
+    tool_result: str
+
     answer: str
     
     chat_history: list

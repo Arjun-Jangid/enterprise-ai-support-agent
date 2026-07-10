@@ -2,7 +2,38 @@ from backend.app.graph.state import State
 from backend.app.rag.generator import generate_answer
 from backend.app.rag.retriever import retrieve_documents
 from backend.app.models.models import ChatHistory
+from backend.app.graph.tools import (
+    extract_expression, 
+    validate_expression, 
+    calculate_expression, 
+    has_valid_expression,
+    invalid_expression,
+    )
 from datetime import datetime, timezone
+
+def greeting_node(state: State) -> State:
+    state["tool_result"] = "Hello! How can I assist you today?"
+    state["sources"] = []
+    return state
+
+
+def calculator_node(state: State) -> State:
+    question = state["question"]
+
+    expression = extract_expression(question)
+
+    if not validate_expression(expression):
+        return invalid_expression(state)
+    
+    if not has_valid_expression(expression):
+        return invalid_expression(state)
+    
+    result = calculate_expression(expression)
+    state["tool_result"] = str(result)
+    state["sources"] = []
+
+    return state
+
 
 def rag_node(state: State) -> State:
     result = retrieve_documents(
@@ -44,11 +75,19 @@ def rag_node(state: State) -> State:
 
 
 def answer_node(state: State) -> State:
-    context = state.get("context", "")
+    if state.get("tool_result"):
+        state["answer"] = state["tool_result"]
+        return state
+    else:
+        context = state.get("context", "")
+
+
+    print("\nContext in answer node -", context)
+    print("\nState in answer node -", state)
 
     if not context:
         state["answer"] = (
-            "I could not find this information in the uploaded documents."
+            "Sorry, I could not find this information in the uploaded documents."
         )
         return state
 
@@ -71,7 +110,6 @@ def save_history_node(state: State) -> State:
     user_message = state["question"]
     assistant_message = state["answer"]
     sources = state["sources"]
-
 
     # User row
     db_user_message = ChatHistory(
