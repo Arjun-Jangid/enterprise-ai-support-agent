@@ -18,4 +18,7 @@ class State(TypedDict):
     
     chat_history: list
 
+    max_similarity: float
+    route: str
+
     db: Session

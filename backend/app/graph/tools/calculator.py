@@ -1,6 +1,7 @@
 import regex as re
 from backend.app.graph.state import State
 
+
 def extract_expression(question: str) -> str:
     pattern = r"[^0-9+\-*/(). ]"
     expression = re.sub(pattern, "", question)

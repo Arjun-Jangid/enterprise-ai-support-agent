@@ -1,14 +1,12 @@
 from backend.app.graph.state import State
+from config import SIMILARITY_THRESHOLD
 
 
 def route_function(state: State) -> str:
-    question = state["question"].strip().lower()
+    return state["route"]
 
-    if any(op in question for op in ['+', '-', '*', '/']):
-        return "calculator"
-    
-    if question.lower() in {"hello", "hi", "hey", "how are you"}:
-        return "greeting"
-    
-    else:
-        return "rag"
+def retrieval_route_function(state: State) -> str:
+    if state["max_similarity"] >= SIMILARITY_THRESHOLD:
+        return "answer"
+
+    return "web_search"

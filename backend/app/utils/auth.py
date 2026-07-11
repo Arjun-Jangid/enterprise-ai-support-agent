@@ -30,7 +30,7 @@ def get_current_user(
         user_id = payload["user_id"]
 
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=401, detail="Authentication failed. Please log in again.")
     
     user = db.query(User).filter(User.id == user_id).first()
 

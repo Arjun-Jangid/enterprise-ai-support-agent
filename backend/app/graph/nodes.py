@@ -2,14 +2,37 @@ from backend.app.graph.state import State
 from backend.app.rag.generator import generate_answer
 from backend.app.rag.retriever import retrieve_documents
 from backend.app.models.models import ChatHistory
-from backend.app.graph.tools import (
+from backend.app.graph.tools.calculator import (
     extract_expression, 
     validate_expression, 
     calculate_expression, 
     has_valid_expression,
-    invalid_expression,
+    invalid_expression
     )
+from backend.app.graph.tools.router import validate_route
+from backend.app.graph.tools.web_search import search_web
+from backend.app.graph.router_llm import router_chain
+
 from datetime import datetime, timezone
+
+
+def router_node(state: State):
+    question = state["question"]
+    try:
+        response = router_chain.invoke({"question": question})
+        route = response.content.strip().lower()
+        if validate_route(route):
+            state["route"] = route
+        else:
+            state["route"] = "rag"
+
+        return state
+
+    except Exception as e:
+        print(e)
+        state["route"] = "rag"
+        return state
+
 
 def greeting_node(state: State) -> State:
     state["tool_result"] = "Hello! How can I assist you today?"
@@ -46,6 +69,7 @@ def rag_node(state: State) -> State:
         state["retrieved_docs"] = []
         state["context"] = ""
         state["sources"] = []
+        state["max_similarity"] = 0.0
 
         return state
 
@@ -60,7 +84,7 @@ def rag_node(state: State) -> State:
             "chunk_id": metadata["chunk_id"],
             "source": metadata["source"],
             "similarity": round(score, 3),
-            "content": doc,
+            "content": doc[:200] + "..." if len(doc) > 200 else doc,
             }
 
             for metadata, doc, score in zip(metadatas, retrieved_docs, similarities)
@@ -69,9 +93,18 @@ def rag_node(state: State) -> State:
     state["retrieved_docs"] = retrieved_docs
     state["context"] = context
     state["sources"] = sources
+    state["max_similarity"] = max(similarities) if similarities else 0.0
 
     return state
 
+
+def web_search_node(state: State) -> State:
+    result = search_web(state["question"])
+
+    state["context"] = result["context"]
+    state["sources"] = result["sources"]
+
+    return state
 
 
 def answer_node(state: State) -> State:
@@ -81,9 +114,6 @@ def answer_node(state: State) -> State:
     else:
         context = state.get("context", "")
 
-
-    print("\nContext in answer node -", context)
-    print("\nState in answer node -", state)
 
     if not context:
         state["answer"] = (
@@ -98,7 +128,7 @@ def answer_node(state: State) -> State:
     )
 
     state["answer"] = answer
-
+    
     return state
 
 
