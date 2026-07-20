@@ -1,8 +1,45 @@
 # AI Enterprise Support Agent
 
-An enterprise-grade Retrieval-Augmented Generation (RAG) application that enables authenticated users to upload business documents and interact with them using natural language.
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688)
+![LangGraph](https://img.shields.io/badge/LangGraph-AI%20Workflow-orange)
+![LangChain](https://img.shields.io/badge/LangChain-RAG-green)
+![Groq](https://img.shields.io/badge/Groq-LLM-red)
+![ChromaDB](https://img.shields.io/badge/ChromaDB-VectorDB-purple)
+![SQLite](https://img.shields.io/badge/SQLite-Database-003B57)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)
 
-The application leverages **LangChain**, **LangGraph**, **FastAPI**, **ChromaDB**, and **Ollama** to provide accurate, context-aware responses with persistent chat history and source citations.
+An enterprise-grade AI support agent powered by Retrieval-Augmented Generation (RAG), LangGraph, and Groq LLM. The application enables authenticated users to upload business documents and interact with them through natural language conversations with source-backed responses.
+
+The application leverages **LangChain**, **LangGraph**, **FastAPI**, **ChromaDB**, **Groq LLM**, and **Docker** to provide accurate, context-aware responses with persistent chat history and source citations.
+
+---
+
+# Project Highlights
+
+- Enterprise RAG Pipeline
+- LangGraph Workflow
+- Persistent Chat History
+- Groq LLM Integration
+- ChromaDB Vector Database
+- Dockerized Backend & Frontend
+- Docker Compose Deployment
+- Source Citations
+
+## Table of Contents
+
+- [Features](#features)
+- [System Architecture](#system-architecture)
+- [LangGraph Workflow](#langgraph-workflow)
+- [Project Structure](#project-structure)
+- [Database Schema](#database-schema)
+- [Tech Stack](#tech-stack)
+- [API Endpoints](#api-endpoints)
+- [Installation](#installation)
+- [Screenshots](#screenshots)
+- [Future Improvements](#future-improvements)
+- [Project Highlights](#project-highlights)
+- [Author](#author)
 
 ## Features
 
@@ -49,43 +86,45 @@ The application leverages **LangChain**, **LangGraph**, **FastAPI**, **ChromaDB*
 - Chat history sidebar
 - Authentication UI
 
----
+### DevOps
 
-# System Architecture
-
-```
-                    ┌───────────────────────┐
-                    │      Streamlit UI     │
-                    └──────────┬────────────┘
-                               │
-                               ▼
-                    ┌───────────────────────┐
-                    │     FastAPI Backend   │
-                    └──────────┬────────────┘
-                               │
-                 ┌─────────────┼─────────────┐
-                 ▼             ▼             ▼
-          Authentication   Document API   Chat API
-                 │             │             │
-                 ▼             ▼             ▼
-           SQLite/Postgres   LangGraph    Chat History
-                               │
-                               ▼
-                        Retrieval Pipeline
-                               │
-                               ▼
-                           ChromaDB
-                               │
-                               ▼
-                        SentenceTransformers
-                               │
-                               ▼
-                           Ollama LLM
-```
+- Dockerized backend and frontend
+- Docker Compose for multi-container orchestration
+- Environment variable management using `.env`
 
 ---
 
-# LangGraph Workflow
+## System Architecture
+
+```
+                        User
+                          │
+                          ▼
+                  Streamlit Frontend
+                    (Docker Container)
+                          │
+                          ▼
+                 FastAPI Backend API
+                    (Docker Container)
+                          │
+        ┌─────────────────┼──────────────────┐
+        ▼                 ▼                  ▼
+ Authentication      LangGraph             SQLite
+        │                 │
+        ▼                 ▼
+  JWT Authentication   RAG Pipeline
+                             │
+                 ┌───────────┴────────────┐
+                 ▼                        ▼
+            ChromaDB              Sentence Transformers
+                 │
+                 ▼
+             Groq LLM
+```
+
+---
+
+## LangGraph Workflow
 
 ```
                     User Question
@@ -108,42 +147,56 @@ The application leverages **LangChain**, **LangGraph**, **FastAPI**, **ChromaDB*
 
 ---
 
-# Project Structure
+## Project Structure
 
-```
-backend/
+```text
+AI-Enterprise-Support-Agent/
 │
-app-├── api/
-    ├── db/
-    ├── document/
-    ├── graph/
-    ├── models/
-    ├── rag/
-    ├── schemas/
-    ├── services/
-    ├── utils/
-    └── main.py
-
-frontend/
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   ├── db/
+│   │   ├── document/
+│   │   ├── graph/
+│   │   ├── models/
+│   │   ├── rag/
+│   │   ├── schemas/
+│   │   ├── services/
+│   │   ├── utils/
+│   │   └── main.py
+│   └── Dockerfile
 │
-├── components/
-├── pages/
-├── services/
-├── utils/
-└── index.py
-
-uploads/
-
-data/
-
-config.py
+├── frontend/
+│   ├── component/
+│   ├── pages/
+│   ├── utils/
+│   ├── index.py
+│   └── Dockerfile
+│
+├── data/
+│   ├── chroma_db/
+│   └── enterprise.db
+│
+├── images/
+│   ├── login.png
+│   ├── signup.png
+│   ├── upload.png
+│   ├── chat_interface.png
+│   └── source_citations.png
+│
+├── uploads/
+│
+├── docker-compose.yml
+├── requirements.txt
+├── config.py
+└── README.md
 ```
 
 ---
 
-# Database Schema
+## Database Schema
 
-## Users
+### Users
 
 | Column   | Description  |
 | -------- | ------------ |
@@ -154,7 +207,7 @@ config.py
 
 ---
 
-## Documents
+### Documents
 
 | Column        | Description       |
 | ------------- | ----------------- |
@@ -167,7 +220,7 @@ config.py
 
 ---
 
-## Chat History
+### Chat History
 
 | Column      | Description         |
 | ----------- | ------------------- |
@@ -181,58 +234,42 @@ config.py
 
 ---
 
-# Tech Stack
+## Tech Stack
 
-## Backend
-
-- FastAPI
-- SQLAlchemy
-- Pydantic
-- JWT Authentication
-
-## AI / LLM
-
-- LangChain
-- LangGraph
-- Ollama
-- SentenceTransformers
-
-## Vector Database
-
-- ChromaDB
-
-## Database
-
-- SQLite
-
-## Frontend
-
-- Streamlit
+| Category        | Technologies                  |
+| --------------- | ----------------------------- |
+| Backend         | FastAPI, SQLAlchemy, Pydantic |
+| AI/LLM          | LangChain, LangGraph, Groq    |
+| Vector Database | ChromaDB                      |
+| Embeddings      | SentenceTransformers          |
+| Database        | SQLite                        |
+| Frontend        | Streamlit                     |
+| DevOps          | Docker, Docker Compose        |
 
 ---
 
-# API Endpoints
+## API Endpoints
 
-## Authentication
+### Authentication
 
 ```
 POST /signup
 POST /login
 ```
 
-## Documents
+### Documents
 
 ```
 POST /upload
 ```
 
-## Question/Answer
+### Question/Answer
 
 ```
 POST /ask
 ```
 
-## Chat
+### Chat
 
 ```
 GET  /chat-history/{document_id}
@@ -240,9 +277,9 @@ GET  /chat-history/{document_id}
 
 ---
 
-# Installation
+## Installation
 
-## Clone Repository
+### 1. Clone Repository
 
 ```bash
 git clone https://github.com/your-username/AI-Enterprise-Support-Agent.git
@@ -250,72 +287,114 @@ git clone https://github.com/your-username/AI-Enterprise-Support-Agent.git
 cd AI-Enterprise-Support-Agent
 ```
 
-## Install Dependencies
+---
+
+### 2. Configure Environment Variables
+
+Create a `.env` file in the project root and add the required environment variables.
+
+```env
+GROQ_API_KEY=your_groq_api_key
+JWT_SECRET_KEY=your_jwt_secret_key
+DATABASE_URL=your_database_url
+```
+
+---
+
+### Run Locally
+
+#### 1. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Run Backend
+#### 2. Start the Backend
 
 ```bash
 uvicorn backend.app.main:app --reload
 ```
 
-## Run Frontend
+#### 3. Start the Frontend
 
 ```bash
 streamlit run frontend/index.py
 ```
 
+The application will be available at:
+
+- Frontend: http://localhost:8501
+- Backend API: http://localhost:8000
+- Swagger UI: http://localhost:8000/docs
+
 ---
 
-# Screenshots
+### Run with Docker
 
-## Login
+#### Build and Start the Application
+
+```bash
+docker compose up --build
+```
+
+The application will be available at:
+
+- Frontend: http://localhost:8501
+- Backend API: http://localhost:8000
+- Swagger UI: http://localhost:8000/docs
+
+To stop the containers:
+
+```bash
+docker compose down
+```
+
+---
+
+## Screenshots
+
+### Login
 
 ![Login](images/login.png)
 
 ---
 
-## Signup
+### Signup
 
 ![Signup](images/signup.png)
 
 ---
 
-## Document Upload
+### Document Upload
 
 ![Document Upload](images/upload.png)
 
 ---
 
-## Chat Interface
+### Chat Interface
 
 ![Chat Interface](images/chat_interface.png)
 
 ---
 
-## Source Citations
+### Source Citations
 
 ![Source Citations](images/source_citations.png)
 
 ---
 
-# Future Improvements
+## Future Improvements
 
+- Multi-Agent Workflow
 - Hybrid Retrieval (BM25 + Dense Retrieval)
-- Tool Calling
-- Calculator Tool
-- Web Search Tool
-- Multi-document RAG
-- Docker Deployment
 - AWS EC2 Deployment
 - GitHub Actions CI/CD
+- Kubernetes Deployment
+- Monitoring & Logging
 
 ---
 
-# Author
+## Author
 
 **Arjun Jangid**
 
