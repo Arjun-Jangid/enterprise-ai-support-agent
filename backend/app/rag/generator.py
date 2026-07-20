@@ -1,12 +1,16 @@
-from langchain_ollama import ChatOllama
-
+from langchain_groq import ChatGroq
 from backend.app.rag.prompts import QA_PROMPT
-
-from config import LLM_MODEL
+from config import GROQ_API_KEY, ANSWER_MODEL
 from fastapi import HTTPException
 
-llm = ChatOllama(model=LLM_MODEL)
-chain = QA_PROMPT | llm
+
+answer_llm = ChatGroq(
+    api_key=GROQ_API_KEY,
+    model=ANSWER_MODEL,
+    temperature=0,
+    )
+
+chain = QA_PROMPT | answer_llm
 
 
 def generate_answer(context, query, chat_history):

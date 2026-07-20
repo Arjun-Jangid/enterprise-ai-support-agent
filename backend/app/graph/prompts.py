@@ -9,7 +9,7 @@ Available routes:
 
 - greeting: greetings, introductions, casual conversation.
 - calculator: arithmetic calculations using numbers and operators (+, -, *, /, parentheses).
-- rag: questions about the user's uploaded documents.
+- rag: Questions about the user's uploaded documents OR questions that are not greetings or calculations.
 
 Rules:
 - Return ONLY one route.

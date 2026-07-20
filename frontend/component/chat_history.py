@@ -29,5 +29,5 @@ def render_chat_history(messages):
                     )
 
                     with st.expander("View Chunk"):
-                        st.markdown(f"<div style='font-size:14px;line-height: 1.5;'>{source["content"]}</div>", unsafe_allow_html=True)
+                        st.markdown(f"<div style='font-size:14px;line-height: 1.5;'>{source['content']}</div>", unsafe_allow_html=True)
             

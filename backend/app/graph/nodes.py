@@ -20,6 +20,7 @@ def router_node(state: State):
     question = state["question"]
     try:
         response = router_chain.invoke({"question": question})
+
         route = response.content.strip().lower()
         if validate_route(route):
             state["route"] = route
@@ -31,12 +32,15 @@ def router_node(state: State):
     except Exception as e:
         print(e)
         state["route"] = "rag"
+
         return state
+    
 
 
 def greeting_node(state: State) -> State:
     state["tool_result"] = "Hello! How can I assist you today?"
     state["sources"] = []
+
     return state
 
 
@@ -89,7 +93,7 @@ def rag_node(state: State) -> State:
 
             for metadata, doc, score in zip(metadatas, retrieved_docs, similarities)
     ]
-
+    
     state["retrieved_docs"] = retrieved_docs
     state["context"] = context
     state["sources"] = sources
@@ -126,7 +130,6 @@ def answer_node(state: State) -> State:
         query=state["question"],
         chat_history=state["chat_history"],
     )
-
     state["answer"] = answer
     
     return state

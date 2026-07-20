@@ -1,9 +1,15 @@
-from langchain_ollama import ChatOllama
-from config import LLM_MODEL
+from langchain_groq import ChatGroq
+from config import GROQ_API_KEY, ROUTER_MODEL
 from backend.app.graph.prompts import ROUTER_TEMPLATE
 
-llm = ChatOllama(model=LLM_MODEL)
-router_chain = ROUTER_TEMPLATE | llm
+
+router_llm = ChatGroq(
+    api_key=GROQ_API_KEY,
+    model=ROUTER_MODEL,
+    temperature=0,
+)
+
+router_chain = ROUTER_TEMPLATE | router_llm
 
 ALLOWED_ROUTES = {
     "greeting",
