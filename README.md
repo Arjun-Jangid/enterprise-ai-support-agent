@@ -8,6 +8,7 @@
 ![ChromaDB](https://img.shields.io/badge/ChromaDB-VectorDB-purple)
 ![SQLite](https://img.shields.io/badge/SQLite-Database-003B57)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)
+![AWS EC2](https://img.shields.io/badge/AWS-EC2-FF9900)
 
 An enterprise-grade AI support agent powered by Retrieval-Augmented Generation (RAG), LangGraph, and Groq LLM. The application enables authenticated users to upload business documents and interact with them through natural language conversations with source-backed responses.
 
@@ -24,6 +25,7 @@ The application leverages **LangChain**, **LangGraph**, **FastAPI**, **ChromaDB*
 - ChromaDB Vector Database
 - Dockerized Backend & Frontend
 - Docker Compose Deployment
+- AWS EC2 Deployment
 - Source Citations
 
 ## Table of Contents
@@ -91,35 +93,49 @@ The application leverages **LangChain**, **LangGraph**, **FastAPI**, **ChromaDB*
 - Dockerized backend and frontend
 - Docker Compose for multi-container orchestration
 - Environment variable management using `.env`
+- Deployed on AWS EC2
+- Configured AWS Security Groups
+- Managed persistent EBS storage
+- Linux swap configuration for AI workload memory optimization
 
 ---
 
 ## System Architecture
 
 ```
-                        User
-                          │
-                          ▼
-                  Streamlit Frontend
-                    (Docker Container)
-                          │
-                          ▼
-                 FastAPI Backend API
-                    (Docker Container)
-                          │
-        ┌─────────────────┼──────────────────┐
-        ▼                 ▼                  ▼
- Authentication      LangGraph             SQLite
-        │                 │
-        ▼                 ▼
-  JWT Authentication   RAG Pipeline
-                             │
-                 ┌───────────┴────────────┐
-                 ▼                        ▼
-            ChromaDB              Sentence Transformers
-                 │
-                 ▼
-             Groq LLM
+                     Internet
+                         │
+                         ▼
+              AWS Security Group
+                         │
+                         ▼
+                AWS EC2 (Ubuntu)
+                         │
+                         ▼
+                  Docker Compose
+              ┌──────────┴──────────┐
+              ▼                     ▼
+     Streamlit Frontend      FastAPI Backend
+                                   │
+                                   ▼
+                           JWT Authentication
+                                   │
+                                   ▼
+                           LangGraph Workflow
+                                   │
+                                   ▼
+                              RAG Pipeline
+                                   │
+                     ┌─────────────┴─────────────┐
+                     ▼                           ▼
+               ChromaDB                     SQLite
+                     │
+                     ▼
+          Sentence Transformers
+                     │
+                     ▼
+                 Groq LLM
+
 ```
 
 ---
@@ -236,15 +252,15 @@ AI-Enterprise-Support-Agent/
 
 ## Tech Stack
 
-| Category        | Technologies                  |
-| --------------- | ----------------------------- |
-| Backend         | FastAPI, SQLAlchemy, Pydantic |
-| AI/LLM          | LangChain, LangGraph, Groq    |
-| Vector Database | ChromaDB                      |
-| Embeddings      | SentenceTransformers          |
-| Database        | SQLite                        |
-| Frontend        | Streamlit                     |
-| DevOps          | Docker, Docker Compose        |
+| Category        | Technologies                                       |
+| --------------- | -------------------------------------------------- |
+| Backend         | FastAPI, SQLAlchemy, Pydantic                      |
+| AI/LLM          | LangChain, LangGraph, Groq                         |
+| Vector Database | ChromaDB                                           |
+| Embeddings      | SentenceTransformers                               |
+| Database        | SQLite                                             |
+| Frontend        | Streamlit                                          |
+| DevOps & Cloud  | Docker, Docker Compose, AWS EC2, Amazon EBS, Linux |
 
 ---
 
@@ -349,6 +365,28 @@ To stop the containers:
 docker compose down
 ```
 
+## AWS Deployment
+
+The application is deployed on an AWS EC2 instance using Docker Compose.
+
+### Infrastructure
+
+- AWS EC2 (Ubuntu)
+- Amazon EBS
+- Docker Engine
+- Docker Compose
+- Security Groups
+- FastAPI
+- Streamlit
+
+### Deployment Highlights
+
+- Deployed FastAPI backend and Streamlit frontend using Docker Compose on AWS EC2
+- Configured AWS Security Groups for secure application access
+- Expanded Amazon EBS storage and resized the Linux partition and filesystem
+- Configured Linux swap memory to prevent Out-of-Memory (OOM) failures during AI model loading
+- Managed application configuration using environment variables (`.env`)
+
 ---
 
 ## Screenshots
@@ -387,10 +425,12 @@ docker compose down
 
 - Multi-Agent Workflow
 - Hybrid Retrieval (BM25 + Dense Retrieval)
-- AWS EC2 Deployment
+- Nginx Reverse Proxy
+- HTTPS with SSL/TLS
 - GitHub Actions CI/CD
 - Kubernetes Deployment
 - Monitoring & Logging
+- AWS Application Load Balancer
 
 ---
 
