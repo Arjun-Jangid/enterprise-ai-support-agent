@@ -8,5 +8,5 @@ app = FastAPI(title="My FastAPI Application", description="This is a sample Fast
 
 Base.metadata.create_all(bind=engine)
 
-app.include_router(router)
-app.include_router(chat_router)
+app.include_router(router, prefix="/api")
+app.include_router(chat_router, prefix="/api")
