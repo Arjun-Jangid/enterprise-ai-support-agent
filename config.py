@@ -21,7 +21,6 @@ COLLECTION_NAME = "enterprise_documents"
 # URLs
 DATABASE_URL = f"sqlite:///{DATA_DIR / 'enterprise.db'}"
 BACKEND_URL = "http://backend:8000/api"
-# BACKEND_URL = "http://127.0.0.1:8000/api"
 
 # API keys
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
