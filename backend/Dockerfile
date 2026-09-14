@@ -2,7 +2,7 @@ FROM python:3.11
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY backend/requirements.txt .
 
 RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch
 
