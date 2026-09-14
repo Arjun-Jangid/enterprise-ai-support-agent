@@ -26,6 +26,9 @@ BACKEND_URL = "http://backend:8000/api"
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
+# AWS S3
+S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+
 # Embedding
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 

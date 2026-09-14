@@ -1,5 +1,4 @@
 import hashlib
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
@@ -13,6 +12,7 @@ from backend.app.document.text_extractor import extract_docx_text, extract_pdf_t
 from backend.app.document.file_writer import save_text_file
 from backend.app.rag.ingestion import ingest_document
 from backend.app.rag.history import build_langchain_history
+from backend.app.services.s3_service import upload_file_to_s3
 from backend.app.graph.graph import graph
 
 
@@ -148,7 +148,13 @@ async def upload_document(
         # Save extracted text
         if not save_text_file(text, target_file_path):
             raise HTTPException(status_code=500, detail="Failed to save text file.")
-        
+
+        s3_key = f"documents/{file_hash}.txt"
+
+        upload_file_to_s3(
+            str(target_file_path),
+            s3_key,
+        )
 
         # Insert DB
         db_doc = Document(
