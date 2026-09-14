@@ -32,6 +32,7 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
+          command_timeout: 20m
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             cd ~/enterprise-ai-support-agent
