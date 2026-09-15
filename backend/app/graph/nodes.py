@@ -12,6 +12,7 @@ from backend.app.graph.tools.calculator import (
 from backend.app.graph.tools.router import validate_route
 from backend.app.graph.tools.web_search import search_web
 from backend.app.graph.router_llm import router_chain
+from backend.app.core.logging_config import logger
 
 from datetime import datetime, timezone
 
@@ -27,10 +28,12 @@ def router_node(state: State):
         else:
             state["route"] = "rag"
 
+        logger.info("Question routed to: %s", state["route"])
+
         return state
 
-    except Exception as e:
-        print(e)
+    except Exception:
+        logger.exception("Router node failed. Falling back to RAG.")
         state["route"] = "rag"
 
         return state
@@ -45,6 +48,7 @@ def greeting_node(state: State) -> State:
 
 
 def calculator_node(state: State) -> State:
+    logger.info("Calculator node started")
     question = state["question"]
 
     expression = extract_expression(question)
@@ -69,7 +73,11 @@ def rag_node(state: State) -> State:
         document_id=state["document_id"],
     )
 
+    logger.info("RAG retrieval started")
+
     if result is None:
+        logger.warning("RAG retrieval returned no results")
+
         state["retrieved_docs"] = []
         state["context"] = ""
         state["sources"] = []
@@ -103,7 +111,11 @@ def rag_node(state: State) -> State:
 
 
 def web_search_node(state: State) -> State:
+    logger.info("Web search started")
+
     result = search_web(state["question"])
+
+    logger.info("Web search completed successfully")
 
     state["context"] = result["context"]
     state["sources"] = result["sources"]
@@ -112,6 +124,8 @@ def web_search_node(state: State) -> State:
 
 
 def answer_node(state: State) -> State:
+    logger.info("Answer generation started")
+
     if state.get("tool_result"):
         state["answer"] = state["tool_result"]
         return state
@@ -131,6 +145,8 @@ def answer_node(state: State) -> State:
         chat_history=state["chat_history"],
     )
     state["answer"] = answer
+
+    logger.info("Answer generation completed")
     
     return state
 

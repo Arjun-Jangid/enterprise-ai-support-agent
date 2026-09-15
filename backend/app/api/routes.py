@@ -13,6 +13,7 @@ from backend.app.document.file_writer import save_text_file
 from backend.app.rag.ingestion import ingest_document
 from backend.app.rag.history import build_langchain_history
 from backend.app.services.s3_service import upload_file_to_s3
+from backend.app.core.logging_config import logger
 from backend.app.graph.graph import graph
 
 
@@ -29,6 +30,7 @@ def singup(request: SignUpSchema, db: Session=Depends(get_db)):
     existing_user = db.query(User).filter(User.email == request.email).first()
 
     if existing_user:
+        logger.warning("Signup attempt with already registered email")
         raise HTTPException(
             status_code=400,
             detail="Email already registered"
@@ -48,6 +50,8 @@ def singup(request: SignUpSchema, db: Session=Depends(get_db)):
         {"user_id": db_user.id}
         )
 
+        logger.info(f"User signup successful: user_id={db_user.id}")
+
         return {
             "message": "Signup successful",
             "user": {
@@ -60,7 +64,7 @@ def singup(request: SignUpSchema, db: Session=Depends(get_db)):
         }
 
     except Exception as e:
-        print(e)
+        logger.exception("User signup failed")
         raise HTTPException(status_code=500, detail=str(e))
     
 
@@ -70,6 +74,7 @@ def login(request: LoginSchema, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == request.email).first()
 
     if user is None or user.password != request.password:
+        logger.warning("Failed login attempt")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
@@ -79,6 +84,7 @@ def login(request: LoginSchema, db: Session = Depends(get_db)):
         {"user_id": user.id}
     )
 
+    logger.info(f"User login successful: user_id={user.id}")
 
     return {
        "message": "Login successful",
@@ -95,6 +101,9 @@ async def upload_document(
     db: Session = Depends(get_db)
 ):
     try:
+        logger.info(
+            f"Document upload started: user_id={current_user.id}, filename={file.filename}"
+        )
         # Read file once
         file_bytes = await file.read()
 
@@ -139,6 +148,10 @@ async def upload_document(
         else:
             raise HTTPException(status_code=400, detail="Unsupported file type.")
 
+        logger.info(
+            f"Document text extracted successfully: filename={file.filename}"
+        )
+
 
         if not text or not text.strip():
             raise HTTPException(status_code=400, detail="No text extracted.")
@@ -181,10 +194,15 @@ async def upload_document(
         raise
     
     except Exception as e:
+        logger.exception("Document upload failed")
         raise HTTPException(
             status_code=500,
             detail=str(e)
         )
+    
+    logger.info(
+        f"Document upload completed successfully: document_id={db_doc.id}"
+    )
     
     return {
         "document_id": db_doc.id,
@@ -200,6 +218,10 @@ def ask_query(
     ):
 
     try:
+        logger.info(
+            f"Question processing started: user_id={current_user.id}, "
+            f"document_id={request.document_id}"
+        )
 
         # Verify document
         document = (db.query(Document)
@@ -248,7 +270,10 @@ def ask_query(
         raise
 
     except Exception as e:
-        print(e)
+        logger.exception(
+            f"Question processing failed: user_id={current_user.id}, "
+            f"document_id={request.document_id}"
+        )
         raise HTTPException(
             status_code=500,
             detail="Failed to process your request.",

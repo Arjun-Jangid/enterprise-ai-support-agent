@@ -1,6 +1,3 @@
-import logging
-
-logger = logging.getLogger(__name__)
 
 def save_text_file(text, save_path) -> bool:
     if not text:
@@ -11,5 +8,4 @@ def save_text_file(text, save_path) -> bool:
         return True
 
     except Exception:
-        logger.exception("Failed to save text")
         return False
