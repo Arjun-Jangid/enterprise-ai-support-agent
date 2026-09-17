@@ -33,7 +33,7 @@ S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 # LLMs
-ROUTER_MODEL = "llama-3.1-8b-instant"
+ROUTER_MODEL = "openai/gpt-oss-20b"
 ANSWER_MODEL = "llama-3.3-70b-versatile"
 
 # Router
