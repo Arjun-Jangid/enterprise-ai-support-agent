@@ -34,7 +34,7 @@ EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 # LLMs
 ROUTER_MODEL = "openai/gpt-oss-20b"
-ANSWER_MODEL = "llama-3.3-70b-versatile"
+ANSWER_MODEL = "openai/gpt-oss-120b"
 
 # Router
 SIMILARITY_THRESHOLD = 0.40
