@@ -15,4 +15,5 @@ ALLOWED_ROUTES = {
     "greeting",
     "calculator",
     "rag",
+    "web_search",
 }

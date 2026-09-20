@@ -2,6 +2,8 @@ import sys
 import requests
 from pathlib import Path
 
+from frontend.component.source_badges import render_sources
+
 import streamlit as st
 
 if not st.session_state.get("logged_in", False):
@@ -88,7 +90,16 @@ if document_id:
                     data = response.json()
 
                     if response.status_code == 200:
-                        st.write(data["answer"])
+                        answer = data["answer"]
+                        sources = [source["source"] for source in data["sources"]]
+
+                        print("Sources: ", data["sources"])
+
+                        st.write(answer)
+                        
+                        if sources:
+                            render_sources(sources)
+                            
                     else:
                         st.error(data.get("detail", "Something went wrong."))
                         st.stop()

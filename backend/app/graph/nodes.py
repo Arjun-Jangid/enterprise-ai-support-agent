@@ -19,8 +19,9 @@ from datetime import datetime, timezone
 
 def router_node(state: State):
     question = state["question"]
+    summary = state["summary"]
     try:
-        response = router_chain.invoke({"question": question})
+        response = router_chain.invoke({"question": question, "summary": summary})
 
         route = response.content.strip().lower()
         if validate_route(route):
@@ -120,6 +121,12 @@ def web_search_node(state: State) -> State:
     state["context"] = result["context"]
     state["sources"] = result["sources"]
 
+    return state
+
+def document_not_found_node(state: State):
+    state["answer"] = (
+        "I couldn't find this information in the uploaded document."
+    )
     return state
 
 

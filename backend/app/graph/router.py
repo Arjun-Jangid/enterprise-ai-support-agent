@@ -9,4 +9,4 @@ def retrieval_route_function(state: State) -> str:
     if state["max_similarity"] >= SIMILARITY_THRESHOLD:
         return "answer"
 
-    return "web_search"
+    return "document_not_found"

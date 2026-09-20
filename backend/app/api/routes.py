@@ -14,6 +14,7 @@ from backend.app.rag.ingestion import ingest_document
 from backend.app.rag.history import build_langchain_history
 from backend.app.services.s3_service import upload_file_to_s3
 from backend.app.core.logging_config import logger
+from backend.app.document.summarizer import generate_document_summary
 from backend.app.graph.graph import graph
 
 
@@ -162,6 +163,12 @@ async def upload_document(
         if not save_text_file(text, target_file_path):
             raise HTTPException(status_code=500, detail="Failed to save text file.")
 
+        try:
+            summary = generate_document_summary(text)
+        except Exception as e:
+            print(f"Summary generation failed: {e}")
+            summary = None
+
         s3_key = f"documents/{file_hash}.txt"
 
         upload_file_to_s3(
@@ -173,6 +180,7 @@ async def upload_document(
         db_doc = Document(
             user_id=current_user.id,
             file_hash=file_hash,
+            summary=summary,
             original_name=file.filename,
             stored_path=str(target_file_path),
             uploaded_at=datetime.now(timezone.utc)
@@ -203,7 +211,7 @@ async def upload_document(
     logger.info(
         f"Document upload completed successfully: document_id={db_doc.id}"
     )
-    
+
     return {
         "document_id": db_doc.id,
         "message": "Document uploaded successfully.",
@@ -254,6 +262,7 @@ def ask_query(
             "question": request.query,
             "user_id": current_user.id,
             "document_id": request.document_id,
+            "summary": document.summary,
             "chat_history": messages,
             "db": db,
         }

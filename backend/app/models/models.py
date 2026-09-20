@@ -21,6 +21,7 @@ class Document(Base):
     file_hash = Column(String, nullable=False)
     original_name = Column(String, nullable=False)
     stored_path = Column(String, nullable=False)
+    summary = Column(String)
     uploaded_at = Column(DateTime, nullable=False)
 
     user = relationship("User", back_populates="documents")

@@ -7,6 +7,7 @@ class State(TypedDict):
     document_id: int
 
     question: str
+    summary: str
 
     retrieved_docs: list[str]
     context: str
