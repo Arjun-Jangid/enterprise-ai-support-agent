@@ -6,6 +6,12 @@ from frontend.component.source_badges import render_sources
 
 import streamlit as st
 
+st.set_page_config(
+    page_title="Enterprise AI Agent",
+    page_icon="⚡",
+    layout="centered",
+)
+
 if not st.session_state.get("logged_in", False):
     st.switch_page("pages/signup.py")
 
@@ -20,44 +26,60 @@ from frontend.utils.session import init_chat_session
 from frontend.utils.headers import get_headers
 from frontend.component.chat_history import render_chat_history
 
-
-st.set_page_config(
-    page_title="AI Enterprise Tool",
-    page_icon="⚡",
-    layout="centered",
-)
-
 init_chat_session()
 
-st.title("AI Enterprise Tool")
-st.markdown("Please upload your document below.")
+st.title("⚡ Enterprise AI Agent")
 
+st.markdown(
+    """
+    <div style="font-size:18px; color:#B0B3B8; margin-bottom:20px;">
+        AI-powered assistant for <b>Document Q&A</b>,
+        <b>Mathematical Calculations</b>, and
+        <b>Web Search</b> in one place.
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
-# File upload
-uploaded_file = st.file_uploader("Choose a file", type=["pdf", "txt", "docx"], key="uploader")
+st.divider()
 
-if st.button("Submit"):
+st.subheader("📄 Upload Document")
+
+st.caption(
+    "Upload a PDF, DOCX, or TXT file to chat with your documents."
+)
+
+uploaded_file = st.file_uploader(
+    "Choose a file",
+    type=["pdf", "txt", "docx"],
+    key="uploader",
+)
+
+st.divider()
+
+if st.button("Submit", disabled=uploaded_file is None):
     if uploaded_file:
-        try:
-            headers = get_headers()
-            files = {
-                "file": (
-                    uploaded_file.name,
-                    uploaded_file.getvalue(),
-                    uploaded_file.type,
-                )
-            }
-            response = requests.post(f"{BACKEND_URL}/upload", files=files, headers=headers)
-            data = response.json()
-            if response.status_code == 200:
-                st.success(data["message"])
-                st.session_state.document_id = data["document_id"]
-            else:
-                st.error(data.get("detail", "Upload failed."))
-        
-        except Exception as e:
-            print(e)
-            st.error("Something went wrong.")
+        with st.spinner("Uploading document..."):
+            try:
+                headers = get_headers()
+                files = {
+                    "file": (
+                        uploaded_file.name,
+                        uploaded_file.getvalue(),
+                        uploaded_file.type,
+                    )
+                }
+                response = requests.post(f"{BACKEND_URL}/upload", files=files, headers=headers)
+                data = response.json()
+                if response.status_code == 200:
+                    st.success(data["message"])
+                    st.session_state.document_id = data["document_id"]
+                else:
+                    st.error(data.get("detail", "Upload failed."))
+            
+            except Exception as e:
+                print(e)
+                st.error("Something went wrong.")
     else:
         st.warning("Please upload a file!")
 
